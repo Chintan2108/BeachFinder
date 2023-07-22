@@ -2,6 +2,10 @@
 .gradle/
 build/
 
+# notebooks + cache
+*.ipynb
+__pycache__
+
 # Local configuration file (sdk path, etc)
 local.properties
 
