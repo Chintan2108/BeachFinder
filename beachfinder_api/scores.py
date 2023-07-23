@@ -60,7 +60,7 @@ def get_beach_score(beach_info):
     if air_temp >= 78 and air_temp <= 90:
         beach_score += 15
     
-    return int(beach_score/10)
+    return beach_score/10
 
 class BeachScore(Resource):
     '''
