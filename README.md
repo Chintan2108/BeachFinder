@@ -3,7 +3,7 @@ ESRI Intern Hackathon 2023
 
 Team Sand-tastic
 
-![Beach FInder](https://github.com/Chintan2108/BeachFinder/assets/115836952/b69342e1-bc46-4c17-bc45-ff31f534cfbe)
+![BeachFinderLogo](https://github.com/Chintan2108/BeachFinder/blob/460e80ee22e34140be5dc225e6bf5f55202413af/BeachFinderLogo.png)
 
 ## Team Members
 Amber Weihrich - Geographer  
