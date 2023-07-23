@@ -4,18 +4,63 @@ from flask_restful import Resource
 from flask import request
 import requests
 from bs4 import BeautifulSoup
+import pandas as pd
+
+def get_algal_scores(beach_name):
+    ref_url = 'https://raw.githubusercontent.com/Chintan2108/BeachFinder/main/Algal_Response_CA_Beaches.csv'
+    temp_df = pd.read_csv(ref_url, index_col=0)
+    algal_response = temp_df.to_dict()
+    del temp_df
+    return algal_response['Algal Score'][beach_name]
 
 def get_surfcaptain_beach_data(beach_name):
-        page=requests.get(f"https://surfcaptain.com/forecast/{beach_name}")
-        soup=BeautifulSoup(page.content, "html.parser")
-        data=soup.find(id="fcst-current-data")
-        elements=data.find_all("div", class_="current-data-desc")
-        return (elements[2].text.strip().split('@')[0], elements[3].text.strip().split("\n")[0], elements[0].text.strip()[4:])
+    page=requests.get(f"https://surfcaptain.com/forecast/{beach_name}")
+    soup=BeautifulSoup(page.content, "html.parser")
+    data=soup.find(id="fcst-current-data")
+    elements=data.find_all("div", class_="current-data-desc")
+    return (elements[2].text.strip().split('@')[0], elements[3].text.strip().split("\n")[0]+'F', elements[0].text.strip()[4:], elements[0].text.strip()[:3]+'F')
 
 def get_coastal_ca_data(record_id):
     response = requests.get(f'https://api.coastal.ca.gov/access/v1/locations/id/{record_id}')
     response = response.json()
     return (response[0]['FEE'], response[0]['PARKING'], response[0]['DSABLDACSS'], response[0]['RESTROOMS'])
+
+def get_beach_score(beach_info):
+    beach_score = 0
+    
+    # algal score (35%)
+    beach_score += (1 - beach_info['algal_score'])*35
+
+    # wind score (25%)
+    wind_speed = float(beach_info['wind'][-4])
+    if wind_speed <= 7:
+        beach_score += 25
+    if wind_speed >7 and wind_speed <= 12:
+        beach_score += 10
+    if wind_speed > 12:
+        beach_score += 1
+    
+    # water temp (25%)
+    water_temp = float(beach_info['water_temp'][:2])
+    if water_temp > 68 and water_temp < 75:
+        beach_score += 25
+    if water_temp > 65 and water_temp <= 68:
+        beach_score += 15
+    if water_temp > 60 and water_temp <= 65:
+        beach_score += 10
+    if water_temp <= 60:
+        beach_score += 1
+    
+    # air temp (15%)
+    air_temp = float(beach_info['air_temp'][:2])
+    if air_temp > 90:
+        beach_score += 10
+    if air_temp < 78:
+        beach_score += 5
+    if air_temp >= 78 and air_temp <= 90:
+        beach_score += 15
+    
+    return int(beach_score/10)
 
 class BeachScore(Resource):
     '''
@@ -38,11 +83,14 @@ class BeachScore(Resource):
             'beach_image_uri': metadata[beach_name][1],
             'water_level': None,
             'water_temp': None,
+            'air_temp': None,
             'wind': None,
             'fee': None,
             'parking': None,
             'disabled_access': None,
-            'restrooms': None
+            'restrooms': None,
+            'algal_score': None,
+            'beach_score': None
         }
 
         surfcaptain_data = get_surfcaptain_beach_data(metadata[beach_name][2])
@@ -51,9 +99,16 @@ class BeachScore(Resource):
         beach_info_response['water_level'] = surfcaptain_data[0]
         beach_info_response['water_temp'] = surfcaptain_data[1]
         beach_info_response['wind'] = surfcaptain_data[2]
+        beach_info_response['air_temp'] = surfcaptain_data[3]
         beach_info_response['fee'] = coastal_ca_data[0]
         beach_info_response['parking'] = coastal_ca_data[1]
         beach_info_response['disabled_access'] = coastal_ca_data[2]
         beach_info_response['restrooms'] = coastal_ca_data[3]
+        beach_info_response['algal_score'] = get_algal_scores(beach_name)
         
+        # get overall beach score
+        beach_info_response['beach_score'] = get_beach_score(beach_info_response)
+
         return beach_info_response, 200
+
+get_surfcaptain_beach_data('huntington-beach-california')
