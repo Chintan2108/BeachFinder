@@ -25,16 +25,17 @@ class BeachScore(Resource):
         beach_name = request.args.get('beach')
 
         metadata = {
-            'huntington-beach-california': ['Huntington Beach', 1255],
-            'laguna-beach-california': ['Laguna Beach', 1304],
-            'santa-barbara-california': ['Santa Barbara', 897],
-            'la-jolla-california': ['La Jolla Beach', 1450],
-            'malibu-california': ['Malibu Beach', 1057],
-            'venice-beach-california': ['Venice Beach', 1091],
+            'huntingtonbeach': ['Huntington Beach', 'https://assets.simpleviewinc.com/simpleview/image/upload/c_limit,h_1200,q_75,w_1200/v1/clients/surfcityusa/DJI_0387_1__2a9cbdab-8c22-4a75-bc70-ff743394f11d.jpg', 'huntington-beach-california', 1255],
+            'lagunabeach': ['Laguna Beach', 'https://cdn.britannica.com/69/175869-050-DFF34225/Crescent-Bay-Beach-Laguna-California.jpg', 'laguna-beach-california', 1304],
+            'santabarbarabeach': ['Santa Barbara', 'https://beachsideinn.com/wp-content/uploads/2021/03/IMG_7459-1024x679-1.jpg', 'santa-barbara-california', 897],
+            'lajollabeach': ['La Jolla Beach', 'https://lajollamom.com/wp-content/uploads/2018/05/la-jolla-cove-guide.jpg', 'la-jolla-california', 1450],
+            'malibubeach': ['Malibu Beach', 'https://malibuluxuryrealty.com/wp-content/uploads/2019/05/Latigo-Beach-palm-trees-Malibu-1-1.jpg', 'malibu-california', 1057],
+            'venicebeach': ['Venice Beach', 'https://a.cdn-hotels.com/gdcs/production103/d1593/995f6282-43fe-464d-ba3d-2b646a8f7ec3.jpg', 'venice-beach-california', 1091],
         }
 
         beach_info_response = {
             'beach_name': metadata[beach_name][0],
+            'beach_image_uri': metadata[beach_name][1],
             'water_level': None,
             'water_temp': None,
             'wind': None,
@@ -44,8 +45,8 @@ class BeachScore(Resource):
             'restrooms': None
         }
 
-        surfcaptain_data = get_surfcaptain_beach_data(beach_name)
-        coastal_ca_data = get_coastal_ca_data(metadata[beach_name][1])
+        surfcaptain_data = get_surfcaptain_beach_data(metadata[beach_name][2])
+        coastal_ca_data = get_coastal_ca_data(metadata[beach_name][3])
 
         beach_info_response['water_level'] = surfcaptain_data[0]
         beach_info_response['water_temp'] = surfcaptain_data[1]
